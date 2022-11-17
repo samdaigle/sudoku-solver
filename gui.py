@@ -36,29 +36,31 @@ class Board:
             for j in range(len(self.board[0])):
                 self.board[i][j] = 0
                 self.squares[i][j].set(0)
+                self.squares[i][j].set_temp(0)
 
     def new_board(self):
-        board = self.board
+
         clues = 27
+        model = [[self.board[i][j]
+                  for j in range(len(self.board[0]))] for i in range(len(self.board))]
         used = []
         while clues > 0:
-            for row in range(len(board)):
+            for row in range(len(self.board)):
                 count = 3
                 while count > 0:
                     col = random.randint(0, 8)
                     num = random.randint(1, 9)
                     if (row, col) in used:
                         continue
-                    if check_valid_number(self.model, num, (row, col)):
-                        board[row][col] = num
+                    if check_valid_number(model, num, (row, col)):
                         self.squares[row][col].set(num)
+                        model[row][col] = num
                         used.append((row, col))
                         count -= 1
                         clues -= 1
                     else:
                         continue
-        if solve_board(self.model):
-            print('good')
+        if solve_board(model):
             return True
         else:
             self.clear_board()
@@ -248,7 +250,6 @@ def main():
     board = Board(9, 9, 540, 540, win)
     key = None
     run = True
-    start = time.time()
     strikes = 0
 
     while run:
