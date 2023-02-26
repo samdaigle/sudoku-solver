@@ -1,21 +1,20 @@
 import pygame
 from sudoku import solve_board, check_valid_number, get_empty_space
-import random
-import time
+
 pygame.font.init()
 
 
 class Board:
     board = [
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0]
+        [5, 3, 0, 0, 7, 0, 0, 0, 0],
+        [6, 0, 0, 1, 9, 5, 0, 0, 0],
+        [0, 9, 8, 0, 0, 0, 0, 6, 0],
+        [8, 0, 0, 0, 6, 0, 0, 0, 3],
+        [4, 0, 0, 8, 0, 3, 0, 0, 1],
+        [7, 0, 0, 0, 2, 0, 0, 0, 6],
+        [0, 6, 0, 0, 0, 0, 2, 8, 0],
+        [0, 0, 0, 4, 1, 9, 0, 0, 5],
+        [0, 0, 0, 0, 8, 0, 0, 7, 9]
     ]
 
     def __init__(self, rows, cols, height, width, win):
@@ -23,48 +22,12 @@ class Board:
         self.cols = cols
         self.height = height
         self.width = width
-        self.squares = [[Square(self.board[i][j], i, j, width, height)
+        self.squares = [[Square(Board.board[i][j], i, j, width, height)
                          for j in range(cols)] for i in range(rows)]
         self.model = None
         self.update_model()
         self.selected = None
         self.win = win
-        self.new_board()
-
-    def clear_board(self):
-        for i in range(len(self.board)):
-            for j in range(len(self.board[0])):
-                self.board[i][j] = 0
-                self.squares[i][j].set(0)
-                self.squares[i][j].set_temp(0)
-
-    def new_board(self):
-
-        clues = 27
-        model = [[self.board[i][j]
-                  for j in range(len(self.board[0]))] for i in range(len(self.board))]
-        used = []
-        while clues > 0:
-            for row in range(len(self.board)):
-                count = 3
-                while count > 0:
-                    col = random.randint(0, 8)
-                    num = random.randint(1, 9)
-                    if (row, col) in used:
-                        continue
-                    if check_valid_number(model, num, (row, col)):
-                        self.squares[row][col].set(num)
-                        model[row][col] = num
-                        used.append((row, col))
-                        count -= 1
-                        clues -= 1
-                    else:
-                        continue
-        if solve_board(model):
-            return True
-        else:
-            self.clear_board()
-            self.new_board()
 
     def update_model(self):
         self.model = [[self.squares[i][j].value for j in range(
@@ -147,7 +110,6 @@ class Board:
                     self.squares[row][col].draw_change(self.win, True)
                     self.update_model()
                     pygame.display.update()
-                    # pygame.time.delay(100)
 
                     if self.solve_gui():
                         return True
@@ -156,7 +118,7 @@ class Board:
                     self.squares[row][col].draw_change(self.win, False)
                     self.update_model()
                     pygame.display.update()
-                    # pygame.time.delay(100)
+
             return False
 
 
@@ -213,39 +175,13 @@ class Square:
         self.temp = val
 
 
-def draw_solve_button(win):
-
-    fnt = pygame.font.SysFont('arial', 20)
-    text = fnt.render('SOLVE', 1,  (255, 255, 255))
-    x = win.get_width() - (text.get_width() + 20)
-    y = 540 + text.get_height()
-
-    pygame.draw.rect(win, (60, 186, 84), (x - 5, y - 5,
-                     text.get_width() + 10, text.get_height()+10))
-    win.blit(text, (x, y))
-
-
-def draw_new_button(win):
-
-    fnt = pygame.font.SysFont('arial', 20)
-    text = fnt.render('NEW', 1,  (255, 255, 255))
-    x = win.get_width() - (65 + 20)
-    y = 540 + text.get_height() + 50
-
-    pygame.draw.rect(win, (219, 50, 54), (x - 5, y - 5,
-                     65 + 10, text.get_height()+10))
-    win.blit(text, (x, y))
-
-
 def redraw_window(win, board):
     win.fill((32, 33, 36))
     board.draw(win)
-    draw_solve_button(win)
-    draw_new_button(win)
 
 
 def main():
-    win = pygame.display.set_mode((540, 650))
+    win = pygame.display.set_mode((540, 540))
     pygame.display.set_caption("SUDOKU")
     board = Board(9, 9, 540, 540, win)
     key = None
@@ -280,10 +216,6 @@ def main():
                 if event.key == pygame.K_c:
                     board.clear()
                     key = None
-                if event.key == pygame.K_n:
-                    board.clear_board()
-                    board.new_board()
-                    key = None
                 if event.key == pygame.K_RETURN:
                     i, j = board.selected
                     if board.squares[i][j].temp != 0:
@@ -306,13 +238,6 @@ def main():
                 clicked = board.click(pos)
                 if clicked:
                     board.select(clicked[0], clicked[1])
-                    key = None
-                if (450 <= pos[0] <= 525) and (560 <= pos[1] <= 590):
-                    board.solve_gui()
-                    key = None
-                if (450 <= pos[0] <= 525) and (610 <= pos[1] <= 642):
-                    board.clear_board()
-                    board.new_board()
                     key = None
 
             if board.selected and key != None:
